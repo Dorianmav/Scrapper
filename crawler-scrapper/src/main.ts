@@ -1,5 +1,7 @@
 // For more information, see https://crawlee.dev/
 import { CheerioCrawler, ProxyConfiguration } from 'crawlee';
+import { testConnection, syncDatabase } from './database/config.js';
+import { initializeModels } from './database/models/index.js';
 
 import { router } from './routes.js';
 
@@ -25,4 +27,33 @@ const crawler = new CheerioCrawler({
     navigationTimeoutSecs: 30,
 });
 
-await crawler.run(startUrls);
+// Fonction principale avec initialisation de la base de données
+async function main() {
+    console.log('🚀 Démarrage de l\'application...');
+    
+    // Initialiser la connexion à la base de données
+    const isConnected = await testConnection();
+    if (!isConnected) {
+        console.error('❌ Impossible de se connecter à la base de données. Arrêt de l\'application.');
+        process.exit(1);
+    }
+    
+    // Initialiser les modèles
+    await initializeModels();
+    
+    // Synchroniser la base de données (créer les tables si elles n'existent pas)
+    await syncDatabase();
+    
+    console.log('🕷️ Démarrage du crawler...');
+    
+    // Lancer le crawler
+    await crawler.run(startUrls2);
+    
+    console.log('✅ Scraping terminé avec succès!');
+}
+
+// Lancer l'application
+main().catch((error) => {
+    console.error('❌ Erreur fatale:', error);
+    process.exit(1);
+});
