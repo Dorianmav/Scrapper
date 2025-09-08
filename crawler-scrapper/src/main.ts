@@ -4,6 +4,7 @@ import { CheerioCrawler, ProxyConfiguration } from 'crawlee';
 import { router } from './routes.js';
 
 const startUrls = ['https://www.nautiljon.com/mangas/gachiakuta.html'];
+const startUrls2 = ['https://www.nautiljon.com/mangas/twin+star+exorcists.html'];
 
 const crawler = new CheerioCrawler({
     // proxyConfiguration: new ProxyConfiguration({ proxyUrls: ['...'] }),

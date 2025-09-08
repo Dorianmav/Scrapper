@@ -33,5 +33,8 @@ export interface MangaData {
     traducteur: string;
     editeurVO: string;
     editeurVF: string;
+    nbVolumesVO: string;
+    nbVolumesVF: string;
+    prix: string;
     volumes: VolumesData;
 }
