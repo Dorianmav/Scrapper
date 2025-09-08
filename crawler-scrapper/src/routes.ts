@@ -1,6 +1,6 @@
 import { createCheerioRouter } from 'crawlee';
-import { MangaData, VolumesData, VolumeSimple, VolumeSpecial, VolumeCollector } from './types.js';
-import * as cheerio from 'cheerio';
+import { MangaData as MangaDataType, VolumesData, VolumeSimple, VolumeSpecial, VolumeCollector } from './types.js';
+import { MangaData } from './database/models/MangaData.js';
 
 export const router = createCheerioRouter();
 
@@ -165,8 +165,8 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
         // Extraction des volumes avec typage approprié
         const volumes = extractVolumes($);
 
-        // Construction de l'objet de données avec typage
-        const mangaData: MangaData = {
+        // Construction de l'objet de données avec typage pour Crawlee
+        const mangaData: MangaDataType = {
             url,
             titre,
             titreOriginal,
@@ -185,7 +185,44 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
             volumes
         };
 
-        // Sauvegarde des données
+        // Sauvegarde dans PostgreSQL via Sequelize
+        try {
+            const savedManga = await MangaData.upsert({
+                url,
+                titre,
+                titre_original: titreOriginal,
+                origine,
+                annee_vf: anneeVF,
+                type,
+                genres: genres.length > 0 ? genres : undefined,
+                themes: themes.length > 0 ? themes : undefined,
+                auteur,
+                traducteur,
+                editeur_vo: editeurVO,
+                editeur_vf: editeurVF,
+                nb_volumes_vo: nbVolumesVO,
+                nb_volumes_vf: nbVolumesVF,
+                prix,
+                volumes,
+                scraped_at: new Date()
+            }, {
+                conflictFields: ['url']
+            });
+
+            log.info(' Données sauvegardées en base PostgreSQL', { 
+                titre, 
+                id: savedManga[0].id,
+                isNewRecord: savedManga[1]
+            });
+        } catch (dbError) {
+            log.error(' Erreur lors de la sauvegarde en base:', {
+                error: dbError instanceof Error ? dbError.message : 'Erreur inconnue',
+                titre,
+                url
+            });
+        }
+
+        // Sauvegarde des données pour Crawlee (fichiers JSON)
         await pushData(mangaData);
 
         log.info('Données extraites avec succès', { titre, volumesCount: volumes.simple.length });
