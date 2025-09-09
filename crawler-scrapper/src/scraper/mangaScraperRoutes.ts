@@ -1,6 +1,7 @@
 import { createCheerioRouter } from 'crawlee';
-import { MangaData as MangaDataType, VolumesData, VolumeSimple, VolumeSpecial, VolumeCollector } from './types.js';
-import { MangaData } from './database/models/MangaData.js';
+import { MangaData as MangaDataType, VolumesData, VolumeSimple, VolumeSpecial, VolumeCollector } from '../shared/types.js';
+import { MangaData } from '../database/models/MangaData.js';
+import { Logger } from '../shared/utils/logger.js';
 
 export const router = createCheerioRouter();
 
@@ -93,6 +94,12 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
         // Le titre est dans h1 mais il faut enlever le lien "Modifier"
         const titreComplet = $('h1').text().trim();
         const titre = titreComplet.replace('Modifier', '').trim();
+        
+        Logger.debug(`📖 Titre extrait: "${titre}"`);
+        
+        if (!titre) {
+            Logger.error('Titre vide détecté - vérification de la structure HTML');
+        }
 
         // Extraction des informations depuis les éléments li de la structure HTML
         // Fonction utilitaire pour extraire la valeur après les deux points
@@ -112,6 +119,7 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
         let nbVolumesVO = '';
         let nbVolumesVF = '';
         let prix = '';
+        let statut = '';
         const genres: string[] = [];
         const themes: string[] = [];
 
@@ -154,7 +162,17 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
             } else if (text.includes('Éditeur VF :')) {
                 editeurVF = extractValue(text);
             } else if (text.includes('Nb volumes VO :')) {
-                nbVolumesVO = extractValue(text);
+                const nbVolumesVOText = extractValue(text);
+                nbVolumesVO = nbVolumesVOText;
+                
+                // Détecter le statut depuis les parenthèses dans nb_volumes_vo
+                if (nbVolumesVOText.includes('(En cours)')) {
+                    statut = 'En cours';
+                    Logger.debug('Statut détecté: En cours');
+                } else if (nbVolumesVOText.includes('(Terminé)')) {
+                    statut = 'Terminé';
+                    Logger.debug('Statut détecté: Terminé');
+                }
             } else if (text.includes('Nb volumes VF :')) {
                 nbVolumesVF = extractValue(text);
             } else if (text.includes('Prix :')) {
@@ -182,8 +200,17 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
             nbVolumesVO,
             nbVolumesVF,
             prix,
-            volumes
+            volumes,
+            statut
         };
+
+        // Debug final avant sauvegarde
+        Logger.debug(`Données finales avant sauvegarde:`, {
+            titre,
+            nbVolumesVO,
+            statut,
+            url
+        });
 
         // Sauvegarde dans PostgreSQL via Sequelize
         try {
@@ -204,13 +231,15 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
                 nb_volumes_vf: nbVolumesVF,
                 prix,
                 volumes,
+                statut: statut || undefined,
                 scraped_at: new Date()
             }, {
                 conflictFields: ['url']
             });
 
-            log.info(' Données sauvegardées en base PostgreSQL', { 
+            log.info('✅ Données sauvegardées en base PostgreSQL', { 
                 titre, 
+                statut,
                 id: savedManga[0].id,
                 isNewRecord: savedManga[1]
             });
@@ -237,7 +266,5 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
             url: request.loadedUrl
         });
 
-        // Optionnel : relancer l'erreur si vous voulez que Crawlee la gère
-        // throw error;
     }
 });

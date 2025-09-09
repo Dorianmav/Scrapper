@@ -1,5 +1,5 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
-import { testConnection, dbConfig, sequelize } from './database/config.js';
+import { DataTypes, Model } from 'sequelize';
+import { testConnection, sequelize } from '../database/config.js';
 import dotenv from 'dotenv';
 
 // Charger les variables d'environnement
@@ -31,9 +31,6 @@ interface TestMangaDataAttributes {
 
 // Interface pour l'instance du modèle
 interface TestMangaDataInstance extends Model<TestMangaDataAttributes, Omit<TestMangaDataAttributes, 'id' | 'created_at' | 'updated_at'>>, TestMangaDataAttributes {}
-
-// Utiliser la connexion principale pour les tests
-// Cela évite d'avoir à créer une nouvelle base de données
 
 // Définir un modèle de test basé sur MangaData
 const TestMangaData = sequelize.define<TestMangaDataInstance>('TestMangaData', {

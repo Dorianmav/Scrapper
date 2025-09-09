@@ -37,4 +37,5 @@ export interface MangaData {
     nbVolumesVF: string;
     prix: string;
     volumes: VolumesData;
+    statut: string;
 }

@@ -1,9 +1,12 @@
 // For more information, see https://crawlee.dev/
-import { CheerioCrawler, ProxyConfiguration } from 'crawlee';
-import { testConnection, syncDatabase } from './database/config.js';
-import { initializeModels } from './database/models/index.js';
+import { CheerioCrawler, ProxyConfiguration, Configuration } from 'crawlee';
+import { testConnection, syncDatabase } from '../database/config.js';
+import { initializeModels } from '../database/models/index.js';
 
-import { router } from './routes.js';
+// Désactiver complètement les logs de Crawlee
+Configuration.getGlobalConfig().set('logLevel', 'ERROR');
+
+import { router } from './mangaScraperRoutes.js';
 
 const startUrls = ['https://www.nautiljon.com/mangas/gachiakuta.html'];
 const startUrls2 = ['https://www.nautiljon.com/mangas/twin+star+exorcists.html'];
@@ -47,7 +50,7 @@ async function main() {
     console.log('🕷️ Démarrage du crawler...');
     
     // Lancer le crawler
-    await crawler.run(startUrls2);
+    await crawler.run(startUrls);
     
     console.log('✅ Scraping terminé avec succès!');
 }

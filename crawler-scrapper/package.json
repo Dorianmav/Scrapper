@@ -4,11 +4,15 @@
     "type": "module",
     "description": "This is an example of a Crawlee project.",
     "dependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "cors": "^2.8.5",
         "crawlee": "^3.0.0",
-        "sequelize": "^6.35.0",
+        "dotenv": "^16.3.0",
+        "express": "^5.1.0",
         "pg": "^8.11.0",
         "pg-hstore": "^2.3.4",
-        "dotenv": "^16.3.0"
+        "sequelize": "^6.35.0"
     },
     "devDependencies": {
         "@apify/tsconfig": "^0.1.0",
@@ -19,12 +23,13 @@
         "typescript": "~5.8.0"
     },
     "scripts": {
-        "start": "npm run start:dev",
-        "start:prod": "node dist/main.js",
-        "start:dev": "tsx src/main.ts",
+        "start": "tsx src/api/index.ts",
+        "start:prod": "node dist/api/index.js",
+        "start:dev": "tsx src/api/index.ts",
+        "start:scraper": "tsx src/scraper/main.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1",
-        "test:db": "tsx src/test-db.ts"
+        "test:db": "tsx src/tests/test-db.ts"
     },
     "author": "It's not you it's me",
     "license": "ISC"

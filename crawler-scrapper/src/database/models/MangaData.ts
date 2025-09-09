@@ -20,6 +20,8 @@ export interface MangaDataAttributes {
     nb_volumes_vf?: string;
     prix?: string;
     volumes?: object;
+    statut?: string; // En cours, Terminé, Abandonné, etc.
+    possede_volumes?: number[]; // Liste des volumes possédés
     scraped_at: Date;
     created_at?: Date;
     updated_at?: Date;
@@ -48,6 +50,8 @@ export class MangaData extends Model<MangaDataAttributes, MangaDataCreationAttri
     public nb_volumes_vf?: string;
     public prix?: string;
     public volumes?: object;
+    public statut?: string;
+    public possede_volumes?: number[];
     public scraped_at!: Date;
     public readonly created_at!: Date;
     public readonly updated_at!: Date;
@@ -124,6 +128,14 @@ MangaData.init(
         },
         volumes: {
             type: DataTypes.JSONB,
+            allowNull: true,
+        },
+        statut: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+        },
+        possede_volumes: {
+            type: DataTypes.ARRAY(DataTypes.INTEGER),
             allowNull: true,
         },
         scraped_at: {
