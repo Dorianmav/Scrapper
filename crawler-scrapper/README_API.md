@@ -6,14 +6,19 @@ Une API REST complète pour scraper et gérer une collection de mangas depuis Na
 
 ### Démarrer l'API
 ```bash
-npm run start:api
+npm start
 ```
 
 L'API sera disponible sur `http://localhost:3000`
 
-### Démarrer le scraper classique
+### Démarrer le scraper de test
 ```bash
-npm run start:dev
+npm run start:scraper
+```
+
+### Tester la base de données
+```bash
+npm run test:db
 ```
 
 ## 📋 Endpoints disponibles
@@ -79,6 +84,16 @@ Met à jour uniquement les volumes possédés.
 
 #### DELETE /api/manga/:id
 Supprime un manga de la base de données.
+
+#### DELETE /api/manga/url
+Supprime un manga par son URL.
+
+**Corps de la requête :**
+```json
+{
+  "url": "https://www.nautiljon.com/mangas/example.html"
+}
+```
 
 ### 📊 Statistiques
 
