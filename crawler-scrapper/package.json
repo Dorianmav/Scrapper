@@ -26,7 +26,7 @@
         "start": "tsx src/api/index.ts",
         "start:prod": "node dist/api/index.js",
         "start:dev": "tsx src/api/index.ts",
-        "start:scraper": "tsx src/scraper/main.ts",
+        "start:scraper": "tsx src/scraper/index.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1",
         "test:db": "tsx src/tests/test-db.ts"
