@@ -13,23 +13,77 @@ const extractVolumes = ($: cheerio.CheerioAPI): VolumesData => {
         collector: []
     };
 
-    // Extraction des volumes simples - seulement l'édition par défaut
-    // On cible spécifiquement la section "Édition par défaut" puis les volumes simples
-    $('h2:contains("Édition par défaut")').next().find('h3:contains("Volume simple")').next().find('img').each((index: number, el: cheerio.Element) => {
-        let imgSrc = $(el).attr('src');
-        const volNumber = index + 1;
+    // Extraction des volumes simples - gestion de deux cas possibles
+    // Logger.debug('🔍 Début de l\'extraction des volumes');
+    
+    // Cas 1: Volumes dans une section "Édition par défaut" → "Volume simple"
+    const editionParDefautVolumes = $('h2:contains("Édition par défaut")').next().find('h3:contains("Volume simple")').next().find('img');
 
-        if (imgSrc) {
-            imgSrc = 'https://www.nautiljon.com' + imgSrc.replace('/imagesmin/', '/images/');
-        }
+    // Logger.debug(`📊 Cas 1: Trouvé ${editionParDefautVolumes.length} volumes dans la section "Édition par défaut"`);
+    
+    // Debug: vérifier la structure HTML pour les volumes simples
+    const h3VolumeSimple = $('h3:contains("Volume simple")');
+    // Logger.debug(`🔍 Éléments h3 "Volume simple" trouvés: ${h3VolumeSimple.length}`);
+    if (h3VolumeSimple.length > 0) {
+        const nextElement = h3VolumeSimple.next();
+        // Logger.debug(`🔍 Élément suivant le h3: ${nextElement.prop('tagName')}, classes: ${nextElement.attr('class')}`);
+        const divUnVol = nextElement.find('div.unVol');
+        // Logger.debug(`🔍 div.unVol trouvés dans l'élément suivant: ${divUnVol.length}`);
+    }
+    
+    if (editionParDefautVolumes.length > 0) {
+        // Structure avec "Édition par défaut"
+        editionParDefautVolumes.each((index: number, el: cheerio.Element) => {
+            let imgSrc = $(el).attr('src');
+            const volNumber = index + 1;
 
-        const volume: VolumeSimple = {
-            numero: volNumber,
-            image: imgSrc
-        };
+            if (imgSrc) {
+                imgSrc = 'https://www.nautiljon.com' + imgSrc.replace('/imagesmin/', '/images/');
+            }
 
-        volumes.simple.push(volume);
-    });
+            const volume: VolumeSimple = {
+                numero: volNumber,
+                image: imgSrc
+            };
+
+            volumes.simple.push(volume);
+        });
+    } else {
+        // Logger.debug('Pas de volumes dans la section "Édition par défaut"');
+        // Cas 2: Volumes directement dans des div.unVol sous h3:contains("Volume simple")
+        const volumeSimpleElements = $('h3:contains("Volume simple")').next().find('div.unVol');
+        // Logger.debug(`🔍 Recherche dans le cas 2: trouvé ${volumeSimpleElements.length} éléments div.unVol`);
+        
+        volumeSimpleElements.each((index: number, el: cheerio.Element) => {
+            const $vol = $(el);
+            const link = $vol.find('a').first();
+            const titleAttr = link.attr('title');
+            // Logger.debug(`📖 Vol ${index}: titleAttr="${titleAttr}", html="${$vol.html()?.substring(0, 100)}..."`);
+            
+            // Extraire le numéro du volume depuis title="Vol. X"
+            let volNumber = index + 1;
+            if (titleAttr) {
+                const match = titleAttr.match(/Vol\.\s*(\d+)/);
+                if (match) {
+                    volNumber = parseInt(match[1], 10);
+                }
+            }
+            
+            // Chercher l'image dans le lien
+            let imgSrc = link.find('img').attr('src');
+            
+            if (imgSrc) {
+                imgSrc = 'https://www.nautiljon.com' + imgSrc.replace('/imagesmin/', '/images/');
+            }
+
+            const volume: VolumeSimple = {
+                numero: volNumber,
+                image: imgSrc
+            };
+
+            volumes.simple.push(volume);
+        });
+    }
 
     // Extraction des volumes spéciaux
     $('h3:contains("Spécial")').next().find('img').each((_: number, el: cheerio.Element) => {
