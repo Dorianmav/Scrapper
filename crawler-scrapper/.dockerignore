@@ -6,3 +6,10 @@ storage
 
 # installed files
 node_modules
+dist
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+deploy.sh
+deploy-digital-ocean.md
