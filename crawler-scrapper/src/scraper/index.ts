@@ -3,13 +3,16 @@ import { CheerioCrawler, ProxyConfiguration, Configuration } from 'crawlee';
 import { testConnection, syncDatabase } from '../database/config.js';
 import { initializeModels } from '../database/models/index.js';
 
-// Désactiver complètement les logs de Crawlee
+// Activer les logs de debug pour le débogage
+// Configuration.getGlobalConfig().set('logLevel', 'DEBUG');
+
+// Activer les logs de debug pour les erreurs
 Configuration.getGlobalConfig().set('logLevel', 'ERROR');
 
 import { router } from './mangaScraperRoutes.js';
 
-const startUrls = ['https://www.nautiljon.com/mangas/gachiakuta.html'];
-const startUrls2 = ['https://www.nautiljon.com/mangas/twin+star+exorcists.html'];
+const startUrlsWITH_DEFAULT = ['https://www.nautiljon.com/mangas/gachiakuta.html'];
+const startUrlsWITHOUT_DEFAULT = ['https://www.nautiljon.com/mangas/sakamoto+days.html'];
 
 const crawler = new CheerioCrawler({
     // proxyConfiguration: new ProxyConfiguration({ proxyUrls: ['...'] }),
@@ -50,7 +53,7 @@ async function main() {
     console.log('🕷️ Démarrage du crawler...');
     
     // Lancer le crawler
-    await crawler.run(startUrls);
+    await crawler.run(startUrlsWITHOUT_DEFAULT);
     
     console.log('✅ Scraping terminé avec succès!');
 }
